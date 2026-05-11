@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Flames Global Bible Study — Liquid Glass UI</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --accent:#0b3d91;
+      --accent-2:#00a896;
+      --teal:#0ea5a4;
+      --muted:#6b7280;
+      --glass-bg: rgba(255,255,255,0.08);
+      --glass-border: rgba(255,255,255,0.14);
+      --glass-strong: rgba(255,255,255,0.12);
+      --card-shadow: 0 10px 30px rgba(2,6,23,0.06);
+      --radius:14px;
+    }
+
+    /* Reset & base */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg,#f7fbff 0%, #f1f6fb 100%);
+      color:#071133;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+      padding-bottom:48px;
+    }
+
+    /* Header with soft glass panel */
+    header{
+      position:relative;
+      padding:1.25rem;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:.8rem;
+      background: linear-gradient(90deg,var(--accent),var(--accent-2));
+      color:#fff;
+      overflow:hidden;
+    }
+
+    /* decorative blurred gradient behind header for liquid depth */
+    header::before{
+      content:'';
+      position:absolute;
+      inset:-30% -10% auto -10%;
+      height:220px;
+      background: radial-gradient(600px 200px at 20% 40%, rgba(255,255,255,0.06), transparent 20%),
+                  radial-gradient(500px 180px at 80% 60%, rgba(255,255,255,0.04), transparent 20%);
+      filter: blur(18px) saturate(120%);
+      pointer-events:none;
+    }
+
+    /* Flame icon */
+    .flame { width:56px; height:56px; transform-origin:center; animation: float 3s ease-in-out infinite; }
+    .flame .inner {
+      width:100%; height:100%;
+      background: radial-gradient(circle at 30% 30%, #e6fff9 0 8%, transparent 9%),
+                  linear-gradient(180deg,#7fe8d6 0%, #00c2a8 60%, #0077a3 100%);
+      border-radius:50% 50% 40% 40% / 60% 60% 40% 40%;
+      filter: drop-shadow(0 8px 24px rgba(0,122,153,0.12));
+      animation: flicker 1.6s infinite;
+    }
+    @keyframes float { 0%{transform:translateY(0)} 50%{transform:translateY(-6px)} 100%{transform:translateY(0)} }
+    @keyframes flicker { 0%{transform:scaleY(1)} 25%{transform:scaleY(0.98)} 50%{transform:scaleY(1.02)} 75%{transform:scaleY(0.99)} 100%{transform:scaleY(1)} }
+
+    header h1{margin:0;font-size:1.15rem;letter-spacing:.2px}
+    header p{margin:.25rem 0 0;font-size:.88rem;opacity:.95}
+
+    .container{max-width:980px;margin:1.25rem auto;padding:0 1rem}
+
+    /* Liquid glass card base */
+    .glass {
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding:1rem;
+      box-shadow: var(--card-shadow);
+      backdrop-filter: blur(10px) saturate(120%);
+      -webkit-backdrop-filter: blur(10px) saturate(120%);
+      position:relative;
+      overflow:hidden;
+      transition: transform .28s ease, box-shadow .28s ease;
+    }
+    .glass:hover { transform: translateY(-6px); box-shadow: 0 22px 48px rgba(2,6,23,0.08); }
+
+    /* animated sheen (liquid surface) */
+    .glass::after{
+      content:'';
+      position:absolute;
+      left:-40%;
+      top:-40%;
+      width:180%;
+      height:180%;
+      background: linear-gradient(120deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 40%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.02) 60%, rgba(255,255,255,0.06) 100%);
+      transform: rotate(-18deg) translateX(-10%);
+      filter: blur(12px);
+      opacity:0.6;
+      pointer-events:none;
+      animation: sheen 6s linear infinite;
+      mix-blend-mode: screen;
+    }
+    @keyframes sheen {
+      0% { transform: rotate(-18deg) translateX(-40%); opacity:0.35; }
+      50% { transform: rotate(-18deg) translateX(10%); opacity:0.9; }
+      100% { transform: rotate(-18deg) translateX(120%); opacity:0.35; }
+    }
+
+    /* Auth layout */
+    .auth-wrap{display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap}
+    .auth-left{flex:1 1 320px;min-width:260px;animation:slideInLeft .6s ease both}
+    .auth-right{flex:1 1 320px;min-width:260px;animation:slideInRight .6s ease both}
+    @keyframes slideInLeft{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+    @keyframes slideInRight{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+
+    label{display:block;font-weight:600;margin-top:.5rem;color:#071133}
+    input{width:100%;padding:.6rem;margin-top:.25rem;border:1px solid rgba(7,17,51,0.06);border-radius:10px;background:rgba(255,255,255,0.9)}
+    .muted{color:var(--muted);font-size:.95rem}
+
+    .row{display:flex;gap:1rem;flex-wrap:wrap}
+    .col{flex:1 1 220px}
+
+    /* Buttons */
+    .btn{
+      display:inline-flex;align-items:center;gap:.5rem;justify-content:center;
+      background:var(--teal);color:#fff;border:0;padding:.6rem 1rem;border-radius:10px;cursor:pointer;
+      box-shadow:0 8px 22px rgba(14,165,164,0.12);transition:transform .18s ease, box-shadow .18s ease;
+      position:relative;overflow:hidden;
+    }
+    .btn.secondary{background:linear-gradient(90deg,var(--accent-2),var(--accent));box-shadow:0 8px 22px rgba(0,122,153,0.12)}
+    .btn.ghost{background:transparent;border:1px solid rgba(7,17,51,0.06);color:#071133;box-shadow:none}
+
+    .btn .ripple{position:absolute;border-radius:50%;transform:scale(0);opacity:.6;background:rgba(255,255,255,0.35);pointer-events:none}
+
+    /* Dashboard & tasks */
+    .progress-card{display:flex;flex-direction:column;gap:.5rem;animation:fadeInUp .5s ease both}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+    .days{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;margin-top:.75rem}
+    .day-btn{
+      padding:.6rem;border-radius:12px;border:0;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      box-shadow:0 8px 22px rgba(2,6,23,0.04);cursor:pointer;text-align:left;transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+      display:block;overflow:hidden;position:relative;
+      backdrop-filter: blur(6px);
+    }
+    .day-btn:hover{transform:translateY(-6px); box-shadow:0 22px 48px rgba(2,6,23,0.06)}
+    .day-btn.complete{background:linear-gradient(90deg,#e9fbf9,#f2fffe);border:1px solid #d6f3ef}
+    .day-btn .meta{font-size:.88rem;color:var(--muted);margin-top:.35rem}
+
+    /* stagger */
+    .days .day-btn{opacity:0}
+    .days .day-btn[data-idx="0"]{animation:popIn .45s .02s both}
+    .days .day-btn[data-idx="1"]{animation:popIn .45s .05s both}
+    .days .day-btn[data-idx="2"]{animation:popIn .45s .08s both}
+    .days .day-btn[data-idx="3"]{animation:popIn .45s .11s both}
+    .days .day-btn[data-idx="4"]{animation:popIn .45s .14s both}
+    .days .day-btn[data-idx="5"]{animation:popIn .45s .17s both}
+    .days .day-btn[data-idx="6"]{animation:popIn .45s .20s both}
+    .days .day-btn[data-idx="7"]{animation:popIn .45s .23s both}
+    .days .day-btn[data-idx="8"]{animation:popIn .45s .26s both}
+    .days .day-btn[data-idx="9"]{animation:popIn .45s .29s both}
+    @keyframes popIn{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:none}}
+
+    .progress-wrap{background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));border-radius:999px;padding:6px;border:1px solid rgba(255,255,255,0.04)}
+    .progress-fill{height:14px;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent-2));width:0%;transition:width .9s cubic-bezier(.2,.9,.2,1);box-shadow:0 8px 22px rgba(0,122,153,0.12)}
+
+    /* confetti */
+    .confetti-piece{position:fixed;pointer-events:none;z-index:9999;width:10px;height:14px;opacity:0;transform:translateY(-20px) rotate(0deg);animation:fall 1.6s linear forwards}
+    @keyframes fall{0%{opacity:1;transform:translateY(-10vh) rotate(0deg)}100%{opacity:1;transform:translateY(110vh) rotate(720deg)}}
+
+    /* responsive */
+    @media (max-width:720px){
+      header{padding:.9rem}
+      .flame{width:44px;height:44px}
+      .days{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="flame" aria-hidden="true"><span class="inner"></span></span>
+    <div style="text-align:left">
+      <h1>Flames Global Bible Study</h1>
+      <p>50‑day reading plan — Genesis to Revelation</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- AUTH -->
+    <section id="authSection" class="glass auth-wrap" aria-live="polite">
+      <div class="auth-left">
+        <strong id="authTitle">Sign In</strong>
+        <p class="muted">Create an account or sign in to track progress and notify admin when you complete a day</p>
+
+        <form id="authForm" onsubmit="return false" style="margin-top:.6rem">
+          <div id="nameRow" style="display:none">
+            <label for="nameInput">Your Name</label>
+            <input id="nameInput" name="name" type="text" autocomplete="name" />
+          </div>
+
+          <label for="emailInput">Email</label>
+          <input id="emailInput" name="email" type="email" autocomplete="email" required />
+
+          <label for="passwordInput">Password</label>
+          <input id="passwordInput" name="password" type="password" autocomplete="current-password" required />
+
+          <div style="margin-top:.75rem;display:flex;gap:.5rem;align-items:center">
+            <button id="authSubmit" class="btn secondary">Sign In</button>
+            <button id="toggleAuth" class="btn ghost" type="button">Switch to Register</button>
+            <button id="guestBtn" class="btn ghost" type="button">Continue as Guest</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="auth-right">
+        <div class="glass" style="padding:.75rem">
+          <div class="muted">Why sign in</div>
+          <ul style="margin:.5rem 0 0 1rem">
+            <li>Track your daily progress</li>
+            <li>Admin receives notification when you complete a day</li>
+            <li>Resume where you left off on any device</li>
+          </ul>
+        </div>
+
+        <div class="glass" style="padding:.75rem;margin-top:.75rem">
+          <div class="muted">Tip</div>
+          <div style="margin-top:.5rem">Use the "Continue as Guest" button to preview the UI without sending admin notifications</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="glass" style="display:none;margin-top:1rem" aria-live="polite">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem">
+        <div>
+          <strong id="welcomeText">Welcome</strong>
+          <div id="emailText" class="muted"></div>
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:center">
+          <button id="logoutBtn" class="btn ghost">Sign Out</button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:1rem;margin-top:.75rem;flex-wrap:wrap">
+        <div style="flex:1 1 320px">
+          <div class="glass progress-card" style="padding:.75rem">
+            <div class="muted">Progress</div>
+            <div style="display:flex;align-items:center;gap:.75rem">
+              <div style="flex:1">
+                <div class="progress-wrap" aria-hidden="true">
+                  <div id="progressFill" class="progress-fill" style="width:0%"></div>
+                </div>
+                <div id="progressText" class="muted" style="margin-top:.5rem">0 / 50 days completed</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex:1 1 240px">
+          <div class="glass" style="padding:.75rem">
+            <div class="muted">Next Task</div>
+            <div id="nextTask" style="margin-top:.5rem">—</div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1rem">Daily Tasks</h3>
+      <div id="daysContainer" class="days" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <footer style="text-align:center;padding:1rem;color:var(--muted)">Flames Global • 50 days • Liquid Glass UI</footer>
+
+  <script>
+    /* Replace with your backend */
+    const API_BASE = 'https://your-backend.example.com';
+
+    let isRegister = false;
+    let currentUser = null;
+    let tasks = [];
+    let progressSet = new Set();
+
+    const authSection = document.getElementById('authSection');
+    const authTitle = document.getElementById('authTitle');
+    const toggleAuth = document.getElementById('toggleAuth');
+    const nameRow = document.getElementById('nameRow');
+    const authSubmit = document.getElementById('authSubmit');
+    const guestBtn = document.getElementById('guestBtn');
+    const dashboard = document.getElementById('dashboard');
+    const welcomeText = document.getElementById('welcomeText');
+    const emailText = document.getElementById('emailText');
+    const daysContainer = document.getElementById('daysContainer');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const nextTask = document.getElementById('nextTask');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    toggleAuth.addEventListener('click', () => {
+      isRegister = !isRegister;
+      authTitle.textContent = isRegister ? 'Register' : 'Sign In';
+      toggleAuth.textContent = isRegister ? 'Switch to Sign In' : 'Switch to Register';
+      nameRow.style.display = isRegister ? 'block' : 'none';
+      authSubmit.textContent = isRegister ? 'Create Account' : 'Sign In';
+      authSection.animate([{transform:'scale(1)'},{transform:'scale(1.01)'},{transform:'scale(1)'}],{duration:320});
+    });
+
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn');
+      if (!btn) return;
+      const rect = btn.getBoundingClientRect();
+      const ripple = document.createElement('span');
+      ripple.className = 'ripple';
+      const size = Math.max(rect.width, rect.height) * 1.2;
+      ripple.style.width = ripple.style.height = size + 'px';
+      ripple.style.left = (e.clientX - rect.left - size/2) + 'px';
+      ripple.style.top = (e.clientY - rect.top - size/2) + 'px';
+      btn.appendChild(ripple);
+      ripple.animate([{transform:'scale(0)',opacity:0.6},{transform:'scale(1)',opacity:0}],{duration:600,easing:'cubic-bezier(.2,.8,.2,1)'});
+      setTimeout(()=>ripple.remove(),700);
+    });
+
+    authSubmit.addEventListener('click', async () => {
+      const name = document.getElementById('nameInput').value.trim();
+      const email = document.getElementById('emailInput').value.trim();
+      const password = document.getElementById('passwordInput').value;
+      if (!validateEmail(email) || password.length < 6 || (isRegister && name.length < 2)) {
+        alert('Please enter valid credentials (password >= 6 chars).');
+        return;
+      }
+      try {
+        const url = isRegister ? `${API_BASE}/api/auth/register` : `${API_BASE}/api/auth/login`;
+        const body = isRegister ? { name, email, password } : { email, password };
+        const res = await fetch(url, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(body)
+        });
+        if (!res.ok) throw new Error('Auth failed');
+        const data = await res.json();
+        if (!data.token) throw new Error('No token returned');
+        localStorage.setItem('fgbs_token', data.token);
+        currentUser = { name: data.name || name, email };
+        showDashboard();
+      } catch (err) {
+        console.error(err);
+        alert('Authentication failed. Ensure your backend is running and CORS allows this origin.');
+      }
+    });
+
+    guestBtn.addEventListener('click', () => {
+      currentUser = { name: 'Guest', email: 'guest@example.com' };
+      localStorage.removeItem('fgbs_token');
+      showDashboard();
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('fgbs_token');
+      currentUser = null;
+      tasks = [];
+      progressSet.clear();
+      daysContainer.innerHTML = '';
+      dashboard.style.display = 'none';
+      authSection.style.display = 'block';
+    });
+
+    async function showDashboard() {
+      authSection.style.display = 'none';
+      dashboard.style.display = 'block';
+      welcomeText.textContent = `Welcome, ${currentUser.name}`;
+      emailText.textContent = currentUser.email;
+      await loadTasksAndProgress();
+    }
+
+    async function loadTasksAndProgress() {
+      daysContainer.innerHTML = '<div class="muted">Loading tasks…</div>';
+      try {
+        const token = localStorage.getItem('fgbs_token');
+        const headers = token ? { Authorization: 'Bearer ' + token } : {};
+        const [tasksRes, progressRes] = await Promise.all([
+          fetch(`${API_BASE}/api/tasks`, { headers }),
+          fetch(`${API_BASE}/api/progress`, { headers })
+        ]);
+        if (!tasksRes.ok) throw new Error('Failed to fetch tasks');
+        tasks = await tasksRes.json();
+        if (progressRes.ok) {
+          const p = await progressRes.json();
+          progressSet = new Set(p.map(r => String(r.task_id)));
+        } else {
+          progressSet = new Set();
+        }
+        renderTasks();
+      } catch (err) {
+        console.error(err);
+        daysContainer.innerHTML = '<div class="muted">Unable to load tasks. Use Continue as Guest to preview UI.</div>';
+      }
+    }
+
+    function renderTasks() {
+      daysContainer.innerHTML = '';
+      let completedCount = 0;
+      let next = null;
+      tasks.forEach((t, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'day-btn';
+        btn.type = 'button';
+        btn.dataset.taskId = t.id;
+        btn.dataset.idx = String(idx % 10);
+        btn.innerHTML = `<div><strong>Day ${t.day}</strong><div class="meta">${t.book_start} ${t.chapter_start} → ${t.book_end} ${t.chapter_end}</div></div>`;
+        if (progressSet.has(String(t.id))) {
+          btn.classList.add('complete');
+          completedCount++;
+        } else {
+          if (!next) next = t;
+        }
+        btn.addEventListener('click', () => onMarkComplete(t, btn));
+        daysContainer.appendChild(btn);
+      });
+
+      const percent = Math.round((completedCount / Math.max(tasks.length,1)) * 100);
+      progressFill.style.width = percent + '%';
+      progressText.textContent = `${completedCount} / ${tasks.length} days completed`;
+      nextTask.textContent = next ? `Day ${next.day}: ${next.book_start} ${next.chapter_start} → ${next.book_end} ${next.chapter_end}` : 'All done — congratulations!';
+    }
+
+    async function onMarkComplete(task, btn) {
+      const token = localStorage.getItem('fgbs_token');
+      if (!token) {
+        if (!confirm('You are not signed in. Marking complete locally will not notify admin. Continue?')) return;
+        btn.classList.add('complete');
+        progressSet.add(String(task.id));
+        renderTasks();
+        launchConfetti();
+        return;
+      }
+
+      btn.disabled = true;
+      const original = btn.innerHTML;
+      btn.innerHTML = `<strong>Sending...</strong>`;
+      try {
+        const res = await fetch(`${API_BASE}/api/progress/${task.id}/complete`, {
+          method:'POST',
+          headers:{
+            'Content-Type':'application/json',
+            'Authorization':'Bearer ' + token
+          }
+        });
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(errText || 'Server error');
+        }
+        progressSet.add(String(task.id));
+        renderTasks();
+        launchConfetti();
+        btn.animate([{transform:'scale(1)'},{transform:'scale(1.04)'},{transform:'scale(1)'}],{duration:420});
+      } catch (err) {
+        console.error(err);
+        alert('Failed to mark complete. Check console and ensure backend is configured.');
+        btn.innerHTML = original;
+        btn.disabled = false;
+      }
+    }
+
+    function launchConfetti() {
+      const colors = ['#00a896','#0077a3','#0b3d91','#7fe8d6','#00c2a8','#8bd3ff'];
+      const count = 28;
+      for (let i=0;i<count;i++){
+        const el = document.createElement('div');
+        el.className = 'confetti-piece';
+        el.style.left = Math.random() * 100 + 'vw';
+        el.style.background = colors[Math.floor(Math.random()*colors.length)];
+        el.style.width = (6 + Math.random()*10) + 'px';
+        el.style.height = (8 + Math.random()*14) + 'px';
+        el.style.borderRadius = (Math.random()>.5 ? '2px' : '50%');
+        el.style.transform = `translateY(-10vh) rotate(${Math.random()*360}deg)`;
+        el.style.animationDuration = (1.2 + Math.random()*0.9) + 's';
+        el.style.opacity = 0.95;
+        document.body.appendChild(el);
+        setTimeout(()=>el.remove(), 2200);
+      }
+    }
+
+    function validateEmail(e) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+    }
+
+    (function init() {
+      const token = localStorage.getItem('fgbs_token');
+      if (token) {
+        currentUser = { name: 'Member', email: '' };
+        showDashboard();
+      }
+    })();
+    
+  </script>
+  <script src="" defer></script>
+
+</body>
+</html>
